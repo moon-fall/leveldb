@@ -2,20 +2,23 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.annotation.Generated;
+
 
 public class Log {
-	private long CurrentLogFileNumber=0;
-	private File file=new File("log");
+	private static long CurrentLogFileNumber=0;
+	private File file;
 	private FileWriter fileWriter;
 	
 	Log(){
+		file=new File(GetCurrentLogFileName());
 		try {
 			if(file.exists()&&file.isFile()){
 				file.delete();
 			}else{
 				file.createNewFile();
 			}
-
+		CurrentLogFileNumber++;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
