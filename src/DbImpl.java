@@ -38,12 +38,17 @@ public class DbImpl {
 				
 			});
 		}
-		log.put(key, value);
+		log.put(key, value);  
 		memTable.put(key,value);
 	}
 
 	public String get(String key) {
-		return memTable.get(key);
+		if(memTable.get(key)!=null){
+			return memTable.get(key);
+		}else if(immutableMemTable.get(key)!=null){
+			return immutableMemTable.get(key);
+		}
+		return null;
 	}
 	
 	private void writeLevel0Table(MemTable mem){
@@ -53,5 +58,4 @@ public class DbImpl {
 			tableBuilder.add((String)entry.getKey(), (String)entry.getValue());
 		}
 	}
-	
 }
