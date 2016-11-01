@@ -3,8 +3,6 @@ import java.util.Random;
 public class SkipList {
 	final private int MAX_LAVEL=12;
 	
-	
-	
 	class Node{
 		int data;
 		Node right;

@@ -25,8 +25,9 @@ public class Slice {
 		return wrapSlice;
 	}
 	
-	public void offsetReset(){
+	public Slice offsetReset(){
 		offset=0;
+		return this;
 	}
 	
 	public void setOffset(int offset){
@@ -76,7 +77,7 @@ public class Slice {
                 (data[offset++]& 0xff) << 24; 
     }
 	
-	//int强转byte,舍去高三位,保留最低的一位
+	//int强转byte,舍去高三位，保留最低的一位
 	public void setInt(int value)
     {
         data[offset++] = (byte) (value);
@@ -162,6 +163,12 @@ public class Slice {
 		offset+=value.length;
 	}
 	
+	public void writeBytes(byte[] value,int startIndex,int length)
+	{
+		System.arraycopy(value,startIndex,data,offset,length);
+		offset+=value.length;
+	}
+	
 	public void readBytes(int index,int length)
 	{
 
@@ -169,7 +176,7 @@ public class Slice {
 	
 	
 	
-	//返回变长存储字节数
+	//返回变长存储整型的字节长度
 	public int writeVariableLengthInt(int value)
     {
         int highBitMask = 0x80;
@@ -233,7 +240,39 @@ public class Slice {
 		writeBytes(value);
     }
 	
+	public boolean isReadable()
+    {
+        return available() > 0;
+    }
 	
+	public int available()
+	{
+		return data.length-offset;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Slice slice = (Slice) o;
+
+		// do lengths match
+		if (length != slice.length) {
+			return false;
+		}
+		
+		for (int i = 0; i < length; i++) {
+			if (data[offset + i] != slice.data[slice.offset + i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	public static void main(String[] args) {
 //		Slice slice=new Slice(10);
