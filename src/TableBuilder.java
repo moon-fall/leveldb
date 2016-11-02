@@ -6,20 +6,18 @@ import java.io.OutputStream;
 
 
 public class TableBuilder {
-	private static long CurrentSSTableFileNumber=0;
 	private File file;
 	private Slice lastKey=new Slice(new byte[]{});
 	private OutputStream out = null;
 	
-	TableBuilder(){
-		file=new File(GetCurrentLogFileName());
+	TableBuilder(long SSTableFileNumber){
+		file=new File(Util.tableFileName(SSTableFileNumber));
 		try {
 			if(file.exists()&&file.isFile()){
 				file.delete();
 			}else{
 				file.createNewFile();
 			}
-			CurrentSSTableFileNumber++;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -31,12 +29,27 @@ public class TableBuilder {
 			Slice slice=new Slice(key.getlength()+value.getlength()+SizeOf.SIZE_OF_INT);
 			int sharedlength=calculateSharedBytes(key,lastKey);
 			int unsharedlength=key.getlength()-sharedlength;
+			
+			//System.out.println("sharedlength:"+sharedlength);
+			//System.out.println("unsharedlength:"+unsharedlength);
+			//System.out.println("valuelength:"+value.getlength());
+			
+			
 			slice.writeVariableLengthInt(sharedlength);
 			slice.writeVariableLengthInt(unsharedlength);
 			slice.writeVariableLengthInt(value.getlength());
 			
+			//System.out.println("sliceoffset:"+slice.getOffset());
+			
 			slice.writeBytes(key.getBytes(), sharedlength, unsharedlength);
+			
+			//System.out.println("sliceoffset:"+slice.getOffset());
+			
 			slice.writeBytes(value.getBytes());
+			
+			//System.out.println("sliceoffset:"+slice.getOffset());
+			
+			//System.out.println("slicelength:"+slice.getBytes(0,slice.getOffset()).length);
 			
 			out.write(slice.getBytes(0,slice.getOffset()));
 			out.close();
@@ -56,14 +69,6 @@ public class TableBuilder {
 		}
 		return sharedlength;
 	}
-
-	String GetCurrentLogFileName(){
-		return String.format("%06d", CurrentSSTableFileNumber)+".sst";
-	}
-	
-	long GetCurrentLogFileNumber(){
-		return CurrentSSTableFileNumber;
-	}
 	
 	long getFileSize(){
 		return file.length();
@@ -73,7 +78,7 @@ public class TableBuilder {
 //		int a = calculateSharedBytes(new Slice(new byte[]{12,32,23,54}), new Slice(new byte[]{12,32,34}));
 //		System.out.println(a);
 		
-		TableBuilder tb=new TableBuilder();
+		TableBuilder tb=new TableBuilder(3254315);
 		tb.add(new Slice(new byte[]{3}), new Slice(new byte[]{1}));
 		tb.add(new Slice(new byte[]{2,3}), new Slice(new byte[]{1}));
 		tb.add(new Slice(new byte[]{5,2}), new Slice(new byte[]{1}));

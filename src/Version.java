@@ -6,17 +6,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Version {
 	
 	//private Long logNumber;
+	private long sstFileNumber=0;
 	
 	private long manifestFileNumber = 1;
 	
 	private File file;
 	
-	private final List<FileMetaData> files=new ArrayList<FileMetaData>();
+	private final List<FileMetaData> files=new CopyOnWriteArrayList<FileMetaData>();
 	
 	private long lastSequence;
 	
@@ -37,7 +40,6 @@ public class Version {
 	
 	public void addFile(FileMetaData fileMetaData)
     {
-		
 		files.add(fileMetaData);
     }
 
@@ -53,11 +55,23 @@ public class Version {
 		return String.format("MANIFEST-%06d", manifestFileNumber);
 	}
 	
+	public long getNextFileNumber()
+    {
+        return ++sstFileNumber;
+    }
+	
 	public Slice get(InternalKey key) throws FileNotFoundException, IOException{
 		List<FileMetaData> maybeFileList=new ArrayList<FileMetaData>();
 		Slice value = null;
 		
+		
+		
 		for(FileMetaData file : files){
+			System.out.println("FileName:"+file.getNumber());
+			System.out.println("getSmallest:"+Arrays.toString(file.getSmallest().getUserKey().getBytes()));
+			System.out.println("getLargest:"+Arrays.toString(file.getLargest().getUserKey().getBytes()));
+			System.out.println("getlookup:"+Arrays.toString(key.getUserKey().getBytes()));
+			
 			if((key.compareTo(file.getSmallest())>=0)&&(key.compareTo(file.getLargest())<=0)){
 				maybeFileList.add(file);
 			}
@@ -66,6 +80,7 @@ public class Version {
 		System.out.println("maybeFileList:"+maybeFileList.size());
 		
 		for(FileMetaData file : maybeFileList){
+			System.out.println("FileName:"+file.getNumber());
 			 Table table=new Table(new FileInputStream(Util.tableFileName(file.getNumber())).getChannel());
 			 value=table.getKey(key);
 			 if(value!=null){

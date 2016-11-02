@@ -160,13 +160,13 @@ public class Slice {
 	public void writeBytes(byte[] value,int length)
 	{
 		System.arraycopy(value,0,data,offset,length);
-		offset+=value.length;
+		offset+=length;
 	}
 	
 	public void writeBytes(byte[] value,int startIndex,int length)
 	{
 		System.arraycopy(value,startIndex,data,offset,length);
-		offset+=value.length;
+		offset+=length;
 	}
 	
 	public void readBytes(int index,int length)
@@ -267,7 +267,7 @@ public class Slice {
 		}
 		
 		for (int i = 0; i < length; i++) {
-			if (data[offset + i] != slice.data[slice.offset + i]) {
+			if (data[i] != slice.data[i]) {
 				return false;
 			}
 		}
@@ -275,18 +275,18 @@ public class Slice {
 	}
 	
 	public static void main(String[] args) {
-//		Slice slice=new Slice(10);
+		Slice slice=new Slice(10);
 //		slice.writeVariableLengthInt(65533);
-//		slice.writeVariableLengthInt(357);
-//		slice.offsetReset();
+		slice.writeVariableLengthInt(9);
+		slice.offsetReset();
 //		System.out.println(Arrays.toString(slice.data));
-//		System.out.println(slice.readVariableLengthInt());
+		System.out.println(slice.readVariableLengthInt());
 //		System.out.println(slice.readVariableLengthInt());
 		
-		Slice slice=new Slice(16);
-		slice.setInt(1256);
-		slice.offsetReset();
-		System.out.println(slice.getInt(0));
+//		Slice slice=new Slice(16);
+//		slice.setInt(1256);
+//		slice.offsetReset();
+//		System.out.println(slice.getInt(0));
 
 	}
 

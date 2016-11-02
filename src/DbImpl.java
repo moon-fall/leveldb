@@ -62,11 +62,17 @@ public class DbImpl {
 	
 	public byte[] get(byte[] key) throws FileNotFoundException, IOException{
 		InternalKey lookupKey=new InternalKey(new Slice(key),version.getLastSequence());
-		
-		Slice result=memTable.get(lookupKey);
-		if(result==null){
-			result=immutableMemTable.get(lookupKey);
+		Slice result = null;
+		if(memTable!=null){
+			result=memTable.get(lookupKey);
 		}
+		
+		if(result==null){
+			if(immutableMemTable!=null){
+				result=immutableMemTable.get(lookupKey);
+			}	
+		}
+		
 		if(result==null){
 			result=version.get(lookupKey);
 		}
@@ -80,26 +86,31 @@ public class DbImpl {
 	}
 	
 	
-	public Slice get(InternalKey key) throws FileNotFoundException, IOException {
-		if(memTable.get(key)!=null){  
-			return memTable.get(key);
-		}else if(immutableMemTable.get(key)!=null){
-			return immutableMemTable.get(key);
-		}
-		
-		return version.get(key);
-	}
+//	public Slice get(InternalKey key) throws FileNotFoundException, IOException {
+//		if(memTable.get(key)!=null){  
+//			return memTable.get(key);
+//		}else if(immutableMemTable.get(key)!=null){
+//			return immutableMemTable.get(key);
+//		}
+//		
+//		return version.get(key);
+//	}
 	
 	private void writeLevel0Table(MemTable mem){
-		TableBuilder tableBuilder = new TableBuilder();  
+		long nextFileNumber=version.getNextFileNumber();
+		TableBuilder tableBuilder = new TableBuilder(nextFileNumber);  
 		Set<Entry<InternalKey,Slice>> entrySet=mem.getEntrySet();
 		for(Entry<InternalKey,Slice> entry : entrySet){
 			tableBuilder.add(entry.getKey().encode(), entry.getValue());
 		}
-		FileMetaData fileMetaData = new FileMetaData(
-				tableBuilder.GetCurrentLogFileNumber(),
-				tableBuilder.getFileSize(),mem.getFirstKey(),mem.getLastKey());
+		FileMetaData fileMetaData = new FileMetaData(nextFileNumber,
+				tableBuilder.getFileSize(), mem.getFirstKey(), mem.getLastKey());
 		version.addFile(fileMetaData);
 	}
+	
+	public void writeLevel0Table(){
+		writeLevel0Table(memTable);
+	}
+	
 	
 }

@@ -15,7 +15,9 @@ public class MemTable {
     }
 	
 	public void put(byte[] key,byte[] value,long sequence){
-		table.put(new InternalKey(new Slice(key),sequence), new Slice(value));
+		InternalKey internalkey=new InternalKey(new Slice(key),sequence);
+		//System.out.println("UserKeyLength:"+internalkey.getUserKey().getlength());
+		table.put(internalkey, new Slice(value));
 		approximateMemoryUsage=approximateMemoryUsage+key.length+value.length+8;
 	}
 	

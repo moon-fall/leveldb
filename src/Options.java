@@ -1,6 +1,6 @@
 
 public class Options {
-	private static int writeBufferSize = 1 << 20;
+	private static int writeBufferSize = 2 << 20;
 	
 	public static int writeBufferSize()
     {
